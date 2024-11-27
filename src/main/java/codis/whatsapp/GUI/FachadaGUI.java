@@ -1,9 +1,9 @@
-package codis.whatsapp;
+package codis.whatsapp.cliente;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
-public class HelloController {
+public class FachadaGUI {
     @FXML
     private Label welcomeText;
 
