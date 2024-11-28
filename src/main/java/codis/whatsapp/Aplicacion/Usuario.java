@@ -1,4 +1,4 @@
-package codis.whatsapp.cliente;
+package codis.whatsapp.Aplicacion;
 
 public class Usuario{
     String nombre;

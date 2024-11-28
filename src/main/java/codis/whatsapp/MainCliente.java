@@ -1,4 +1,4 @@
-package codis.whatsapp.cliente;
+package codis.whatsapp;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -7,14 +7,16 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-public class FachadaAplicacion extends Application {
+public class MainCliente extends Application {
+
     @Override
-    public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(FachadaAplicacion.class.getResource("hello-view.fxml"));
+    public void start(Stage stage) throws IOException{
+        FXMLLoader fxmlLoader = new FXMLLoader(MainCliente.class.getResource("login.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 320, 240);
-        stage.setTitle("Hello!");
+        stage.setTitle("Inicio de sesión");
         stage.setScene(scene);
         stage.show();
+
     }
 
     public static void main(String[] args) {
