@@ -1,11 +1,13 @@
 package codis.whatsapp;
 
+import codis.whatsapp.Aplicacion.Cliente;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class MainCliente extends Application {
 
@@ -16,10 +18,11 @@ public class MainCliente extends Application {
         stage.setTitle("Inicio de sesión");
         stage.setScene(scene);
         stage.show();
-
     }
 
     public static void main(String[] args) {
         launch();
     }
+
+
 }

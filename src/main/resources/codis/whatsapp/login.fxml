@@ -5,25 +5,59 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" prefHeight="235.0" prefWidth="264.0" spacing="20.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/22" fx:controller="codis.whatsapp.GUI.ControladorLogin">
-  <padding>
-    <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-  </padding>
+<VBox alignment="CENTER" prefHeight="300.0" prefWidth="300.0" spacing="20.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="codis.whatsapp.GUI.ControladorLogin">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
 
-  <Label fx:id="welcomeText" text="Inicio de sesión:" textAlignment="CENTER" />
-   <VBox prefHeight="200.0" prefWidth="100.0">
-      <children>
-         <Label text="Nombre de usuario:" />
-         <TextField fx:id="cuadroTextoNombreUsuario" />
-      </children>
-   </VBox>
-   <VBox prefHeight="200.0" prefWidth="100.0">
-      <children>
-         <Label text="Contraseña:" />
-         <PasswordField fx:id="cuadroTextoContrasena" />
-      </children>
-   </VBox>
-  <Button fx:id="botonIniciarSesion" onAction="#iniciarSesion" text="Iniciar Sesión" />
+    <!-- Barra de ajustes -->
+    <HBox alignment="CENTER_LEFT" prefHeight="40.0" spacing="10.0" style="-fx-background-color: lightgray;">
+        <Button text="⚙ Ajustes" onAction="#mostrarAjustes" />
+    </HBox>
+
+    <!-- Configuración oculta por defecto -->
+    <VBox fx:id="seccionAjustes" spacing="10.0" visible="false" managed="false" style="-fx-padding: 10;">
+        <HBox spacing="10.0">
+            <Label text="IP:" />
+            <TextField fx:id="campoIP" promptText="127.0.0.1" />
+        </HBox>
+        <HBox spacing="10.0">
+            <Label text="Puerto:" />
+            <TextField fx:id="campoPuerto" promptText="8080" />
+        </HBox>
+        <HBox spacing="10.0">
+            <Label text="IP Servidor:" />
+            <TextField fx:id="campoIPServidor" promptText="192.168.1.1" />
+        </HBox>
+        <HBox spacing="10.0">
+            <Label text="Puerto Servidor:" />
+            <TextField fx:id="campoPuertoServidor" promptText="9090" />
+        </HBox>
+    </VBox>
+
+    <!-- Contenido principal -->
+    <Label fx:id="textoVentana" text="Inicio de sesión:" textAlignment="CENTER" />
+    <VBox prefHeight="200.0" prefWidth="100.0">
+        <children>
+            <Label fx:id="etiquetaNombreUsuario" text="Nombre de usuario:" />
+            <TextField fx:id="cuadroTextoNombreUsuario" />
+        </children>
+    </VBox>
+    <VBox prefHeight="200.0" prefWidth="100.0">
+        <children>
+            <Label fx:id="etiquetaContrasena" text="Contraseña:" />
+            <PasswordField fx:id="cuadroTextoContrasena" />
+        </children>
+    </VBox>
+    <HBox prefHeight="100.0" prefWidth="200.0">
+        <Button onAction="#iniciarSesion" text="Iniciar sesión" />
+        <Button mnemonicParsing="false" onAction="#crearCuenta" text="Crear cuenta">
+            <HBox.margin>
+                <Insets left="10.0" />
+            </HBox.margin>
+        </Button>
+    </HBox>
 </VBox>

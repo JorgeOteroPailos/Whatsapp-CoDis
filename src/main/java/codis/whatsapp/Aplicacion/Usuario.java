@@ -1,5 +1,11 @@
 package codis.whatsapp.Aplicacion;
 
 public class Usuario{
-    String nombre;
+    private String nombre;
+
+    public String getNombre(){return nombre;}
+
+    public Usuario(String nombre){
+        this.nombre=nombre;
+    }
 }
