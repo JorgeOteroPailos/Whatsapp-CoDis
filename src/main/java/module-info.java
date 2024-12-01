@@ -1,6 +1,7 @@
 module codis.whatsapp {
     requires javafx.controls;
     requires javafx.fxml;
+    requires java.rmi;
 
 
     opens codis.whatsapp to javafx.fxml;

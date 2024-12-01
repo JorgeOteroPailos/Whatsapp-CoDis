@@ -1,5 +1,7 @@
 package codis.whatsapp.Aplicacion;
 
-public interface IServidor {
+import java.rmi.Remote;
 
+public interface IServidor extends Remote {
+    public void inicializar(Cliente cliente);
 }

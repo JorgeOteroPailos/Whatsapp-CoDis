@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="codis.whatsapp.GUI.ControladorAmigos">
+    <children>
+        <!-- Área principal -->
+        <VBox spacing="10.0" prefWidth="400.0" prefHeight="400.0" AnchorPane.topAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.bottomAnchor="10.0">
+            <!-- Campo para agregar amigos -->
+            <HBox spacing="10.0">
+                <TextField fx:id="campoAgregarAmigo" promptText="Nombre del amigo a agregar" HBox.hgrow="ALWAYS" />
+                <Button text="Agregar" onAction="#agregarAmigo" />
+            </HBox>
+
+            <!-- Lista de solicitudes de amistad -->
+            <Label text="Solicitudes de amistad:" style="-fx-font-size: 16;" />
+            <ScrollPane fitToWidth="true">
+                <VBox fx:id="listaSolicitudes" spacing="10.0" />
+            </ScrollPane>
+        </VBox>
+    </children>
+</AnchorPane>
+

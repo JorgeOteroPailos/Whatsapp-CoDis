@@ -4,18 +4,30 @@ import codis.whatsapp.Aplicacion.Chat;
 import codis.whatsapp.Aplicacion.Cliente;
 import codis.whatsapp.Aplicacion.Mensaje;
 import codis.whatsapp.Aplicacion.Usuario;
+import codis.whatsapp.MainCliente;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
+import java.io.IOException;
+import java.rmi.RemoteException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+
+import static codis.whatsapp.Aplicacion.Utils.debugPrint;
 
 public class ControladorPrincipal {
 
@@ -31,6 +43,7 @@ public class ControladorPrincipal {
     private Button sendButton;
     @FXML
     private Label currentChatLabel;
+    private Stage ventanaAmigos;
 
     private Cliente user;
     private Chat chatSeleccionado;
@@ -38,48 +51,37 @@ public class ControladorPrincipal {
 
     @FXML
     public void initialize() {
-
+        // Configurar el comportamiento del scroll manualmente
         scrollPaneMensajes.setOnScroll(event -> {
-            double deltaY = event.getDeltaY() * 0.05; // Aumenta o disminuye este factor según lo necesario
+            double deltaY = event.getDeltaY() * 0.05; // Ajusta la sensibilidad
             double value = scrollPaneMensajes.getVvalue();
             scrollPaneMensajes.setVvalue(value - deltaY);
             event.consume();
         });
-        // Desplazar automáticamente al final al agregar un mensaje
-        scrollPaneMensajes.vvalueProperty().bind(listaMensajes.heightProperty());
-        // Desplazar automáticamente al final al agregar un mensaje
-        scrollPaneMensajes.vvalueProperty().bind(listaMensajes.heightProperty());
-        // Configuración del botón de enviar
+
+        // Configurar el botón de enviar
         sendButton.setOnAction(event -> enviarMensaje());
-
-
     }
 
     public void inicializarChats() {
-
-        // Crear chats de ejemplo con listas inicializadas
-        Usuario user1=new Usuario("amigo1");
+        Usuario user1 = new Usuario("amigo1");
         Chat chat1 = new Chat(user1);
         chat1.getMensajes().add(new Mensaje("Hola, ¿cómo estás?", LocalDateTime.now().minusMinutes(10), user1));
         chat1.getMensajes().add(new Mensaje("¡Bien! ¿Y tú?", LocalDateTime.now().minusMinutes(5), user.getUser()));
 
-        if(user==null){System.out.println("POLLA");}
-
-        Usuario user2=new Usuario("amigo2");
+        Usuario user2 = new Usuario("amigo2");
         Chat chat2 = new Chat(user2);
         chat2.getMensajes().add(new Mensaje("¿Qué tal tu día?", LocalDateTime.now().minusMinutes(20), user2));
 
-        // Agregar chats al mapa
         chats.put(chat1.getUser().getNombre(), chat1);
         chats.put(chat2.getUser().getNombre(), chat2);
 
-        // Mostrar chats en la lista
         agregarChat(chat1);
         agregarChat(chat2);
     }
 
     private void agregarChat(Chat chat) {
-        String nombreChat=chat.getUser().getNombre();
+        String nombreChat = chat.getUser().getNombre();
         Label chatLabel = new Label(nombreChat);
         chatLabel.setStyle("-fx-padding: 10; -fx-font-size: 14; -fx-background-color: lightgray; -fx-border-color: grey;");
         chatLabel.setOnMouseClicked(event -> seleccionarChat(nombreChat));
@@ -98,6 +100,8 @@ public class ControladorPrincipal {
             for (Mensaje mensaje : chatSeleccionado.getMensajes()) {
                 agregarMensaje(mensaje);
             }
+            // Desplaza automáticamente al final después de cargar los mensajes
+            scrollToBottom();
         }
     }
 
@@ -112,37 +116,81 @@ public class ControladorPrincipal {
     }
 
     private void agregarMensaje(Mensaje mensaje) {
+        HBox contenedorMensaje = new HBox();
         VBox mensajeVBox = new VBox(5);
+        mensajeVBox.setMaxWidth(300); // Limitar el ancho máximo de la burbuja del mensaje
 
-        // Nombre del remitente
+        // Etiqueta del remitente
         Label remitenteLabel = new Label(mensaje.remitente.getNombre());
         remitenteLabel.setStyle("-fx-font-size: 12; -fx-text-fill: grey;");
 
-        // Texto del mensaje
-        Text textoMensaje = new Text(mensaje.texto);
+        // Contenido del mensaje
+        Label textoMensaje = new Label(mensaje.texto);
+        textoMensaje.setWrapText(true);
         textoMensaje.setStyle("-fx-font-size: 16;");
 
         // Hora del mensaje
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-        Label horaLabel = new Label(mensaje.tiempo.format(formatter));
+        Label horaLabel = new Label(mensaje.tiempo.format(DateTimeFormatter.ofPattern("HH:mm")));
         horaLabel.setStyle("-fx-font-size: 10; -fx-text-fill: grey;");
 
-        // Agrupar en el VBox
+        // Añadir contenido al VBox
         mensajeVBox.getChildren().addAll(remitenteLabel, textoMensaje, horaLabel);
 
-        // Aplicar estilos según el remitente
+        // Estilizar y alinear según el remitente
         if (mensaje.remitente.equals(user.getUser())) {
             mensajeVBox.setStyle("-fx-background-color: lightblue; -fx-padding: 10; -fx-background-radius: 10;");
+            contenedorMensaje.setAlignment(Pos.CENTER_RIGHT); // Mensajes enviados a la derecha
         } else {
             mensajeVBox.setStyle("-fx-background-color: lightgray; -fx-padding: 10; -fx-background-radius: 10;");
+            contenedorMensaje.setAlignment(Pos.CENTER_LEFT); // Mensajes recibidos a la izquierda
         }
 
-        listaMensajes.getChildren().add(mensajeVBox);
+        contenedorMensaje.getChildren().add(mensajeVBox);
+        listaMensajes.getChildren().add(contenedorMensaje);
+
+        // Desplaza automáticamente al final después de agregar un mensaje
+        scrollToBottom();
     }
 
+    private void scrollToBottom() {
+        // Desplazar automáticamente al final del ScrollPane
+        Platform.runLater(() -> scrollPaneMensajes.setVvalue(1.0));
+    }
 
     public void configurarParametros(String ip, String puerto, String ipServidor, String puertoServidor, Usuario user) {
-        //TODO
-        this.user=new Cliente(user, ip, Integer.parseInt(puerto));
+        try{
+            this.user = new Cliente(user, ip, Integer.parseInt(puerto));
+        }catch(RemoteException e){
+            System.err.println("Error en la creación del cliente");
+            System.exit(-1);
+        }
+
+    }
+
+    @FXML
+    public void abrirVentanaAmigos() {
+        if (ventanaAmigos != null && ventanaAmigos.isShowing()) {
+            System.out.println("La ventana de amigos ya está abierta.");
+            return; // No abre otra ventana si ya hay una abierta
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(MainCliente.class.getResource("amigos.fxml"));
+            debugPrint("loader creado");
+            Parent root = loader.load();
+            debugPrint("loader cargado");
+            ventanaAmigos = new Stage();
+            debugPrint("Stage creado");
+            ventanaAmigos.setTitle("Gestión de Amigos");
+            ventanaAmigos.setScene(new Scene(root));
+            ventanaAmigos.setOnCloseRequest(event -> ventanaAmigos = null); // Limpiar referencia al cerrar
+            ventanaAmigos.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Error al abrir la ventana de amigos: " + e.getMessage());
+        } catch (Exception e){
+            e.printStackTrace();
+            System.err.println("Error inesperado al abrir la ventana de amigos: "+e.getMessage());
+        }
     }
 }

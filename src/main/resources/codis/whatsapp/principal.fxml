@@ -19,8 +19,9 @@
         <!-- Área de mensajes -->
         <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="200.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <!-- Cabecera del chat -->
-            <HBox style="-fx-background-color: #eeeeee; -fx-padding: 10;">
+            <HBox style="-fx-background-color: #eeeeee; -fx-padding: 10; spacing: 10;">
                 <Label fx:id="currentChatLabel" style="-fx-font-size: 16;" text="Chat Actual" />
+                <Button fx:id="openAmigosButton" text="Amigos" onAction="#abrirVentanaAmigos" />
             </HBox>
 
             <!-- ScrollPane para los mensajes -->

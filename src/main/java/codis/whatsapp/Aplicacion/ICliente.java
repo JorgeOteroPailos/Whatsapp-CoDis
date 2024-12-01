@@ -1,7 +1,9 @@
 package codis.whatsapp.Aplicacion;
 
-public interface ICliente {
-    public void enviar(String m, Usuario remitente);
+import java.rmi.Remote;
+
+public interface ICliente extends Remote {
+    public void enviar(String m, Usuario remitente, String codigo);
 
 
 
