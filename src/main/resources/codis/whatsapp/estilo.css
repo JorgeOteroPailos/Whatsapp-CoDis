@@ -1,0 +1,45 @@
+/* General styles */
+.root {
+    -fx-font-family: "Arial";
+    -fx-font-size: 14px;
+}
+
+/* Botones */
+.button {
+    -fx-background-color: linear-gradient(to bottom, #4caf50, #2e7d32);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+    -fx-border-color: #1b5e20;
+}
+
+/* Labels */
+.label {
+    -fx-text-fill: #37474f;
+    -fx-font-size: 16px;
+}
+
+/* TextFields */
+.text-field {
+    -fx-background-color: #eeeeee;
+    -fx-border-color: #b0bec5;
+    -fx-border-radius: 5;
+    -fx-padding: 5px;
+}
+
+/* VBox */
+.vbox {
+    -fx-spacing: 10px;
+    -fx-padding: 10px;
+    -fx-background-color: #fafafa;
+}
+
+/* ScrollPane */
+.scroll-pane {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #b0bec5;
+    -fx-border-width: 1px;
+    -fx-padding: 5px;
+}
