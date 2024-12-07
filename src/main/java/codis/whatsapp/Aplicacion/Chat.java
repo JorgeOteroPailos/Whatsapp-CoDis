@@ -6,19 +6,13 @@ import java.util.List;
 
 public class Chat {
     private List<Mensaje> mensajes;
-    private Usuario user;
 
     public List<Mensaje> getMensajes() {
         return mensajes;
     }
 
-    public Chat(Usuario user){
-        this.user=user;
+    public Chat(){
         mensajes=new ArrayList<Mensaje>();
-    }
-
-    public Usuario getUser(){
-        return user;
     }
 
     public void anadirMensaje(Mensaje mensaje){

@@ -1,45 +1,139 @@
-/* General styles */
+/* Estilo base */
 .root {
-    -fx-font-family: "Arial";
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
     -fx-font-size: 14px;
+    -fx-background-color: linear-gradient(to bottom, #f5f7fa, #c3cfe2);
+}
+
+/* Cabeceras */
+.header-label {
+    -fx-font-size: 22px;
+    -fx-text-fill: #3e3e3e;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 5, 0, 0, 1);
 }
 
 /* Botones */
 .button {
-    -fx-background-color: linear-gradient(to bottom, #4caf50, #2e7d32);
+    -fx-background-color: linear-gradient(to bottom, #ff7e5f, #feb47b);
     -fx-text-fill: white;
+    -fx-font-size: 14px;
     -fx-font-weight: bold;
-    -fx-padding: 10px 20px;
+    -fx-padding: 10 20;
     -fx-background-radius: 5;
     -fx-border-radius: 5;
-    -fx-border-color: #1b5e20;
+    -fx-border-color: #ff6f61;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 1);
+}
+
+.button:hover {
+    -fx-background-color: linear-gradient(to bottom, #feb47b, #ff7e5f);
+}
+
+.button:pressed {
+    -fx-background-color: linear-gradient(to bottom, #ff6f61, #ff5a36);
+}
+
+/* Campos de texto */
+.text-field, .password-field {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #42a5f5;
+    -fx-border-radius: 5;
+    -fx-padding: 5px;
+    -fx-font-size: 14px;
+    -fx-text-fill: #212121;
+}
+
+.text-field:focused, .password-field:focused {
+    -fx-border-color: #1e88e5;
+    -fx-background-color: #e3f2fd;
 }
 
 /* Labels */
 .label {
-    -fx-text-fill: #37474f;
-    -fx-font-size: 16px;
+    -fx-text-fill: #5e5e5e;
+    -fx-font-size: 14px;
 }
 
-/* TextFields */
-.text-field {
-    -fx-background-color: #eeeeee;
-    -fx-border-color: #b0bec5;
-    -fx-border-radius: 5;
-    -fx-padding: 5px;
+/* HBox */
+.hbox {
+    -fx-spacing: 10px;
 }
 
 /* VBox */
 .vbox {
-    -fx-spacing: 10px;
-    -fx-padding: 10px;
-    -fx-background-color: #fafafa;
+    -fx-spacing: 15px;
+    -fx-padding: 20px;
+    -fx-background-color: linear-gradient(to bottom, #fdfcfb, #e2d1c3);
+    -fx-border-color: #cccccc;
+    -fx-border-radius: 10px;
+    -fx-background-image: url("chat-message-bg.png");
+    -fx-background-repeat: repeat;
+    -fx-background-size: cover;
 }
 
 /* ScrollPane */
 .scroll-pane {
-    -fx-background-color: #ffffff;
-    -fx-border-color: #b0bec5;
-    -fx-border-width: 1px;
+    -fx-background-color: transparent;
+    -fx-border-color: #dddddd;
+    -fx-border-radius: 5px;
     -fx-padding: 5px;
+
 }
+
+/* Lista de chats */
+#listaChats {
+    -fx-background-color: linear-gradient(to bottom, #f7b7a3, #ffd194);
+    -fx-border-color: #cccccc;
+    -fx-border-radius: 5px;
+    -fx-padding: 10px;
+
+}
+
+#listaChats .label {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #dddddd;
+    -fx-border-radius: 5px;
+    -fx-padding: 5px;
+    -fx-text-fill: #444444;
+    -fx-font-size: 14px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 3, 0, 0, 1);
+}
+
+#listaChats .label:hover {
+    -fx-background-color: #e3f2fd;
+}
+
+#listaChats .label:focused {
+    -fx-background-color: #bbdefb;
+    -fx-border-color: #42a5f5;
+}
+
+/* Fondo aplicado al contenedor de mensajes */
+#listaMensajes {
+    /*-fx-background-image: url("chat-message-bg.png"); /* Imagen de fondo */
+    -fx-background-repeat: repeat;
+    -fx-background-size: cover; /* Asegura que cubra todo el área */
+    -fx-background-position: center;
+    -fx-background-attachment: fixed; /* Evita que se mueva al hacer scroll */
+    -fx-background-color: transparent; /* Transparente para que la imagen se vea claramente */
+    -fx-padding: 10px;
+    -fx-border-radius: 10px;
+}
+
+/* ScrollPane que contiene los mensajes */
+#scrollPaneMensajes {
+    -fx-background-color: transparent; /* Transparente para que no tape el fondo */
+}
+
+#currentChatLabel {
+    -fx-font-size: 18px; /* Aumenta el tamaño de la fuente */
+    -fx-font-weight: bold; /* Aplica negrita */
+    /*-fx-text-fill: #1a237e; /* Cambia el color del texto */
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 4, 0, 0, 1); /* Sombra para destacar */
+}
+
+
+
+

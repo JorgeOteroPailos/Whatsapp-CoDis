@@ -8,32 +8,34 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="codis.whatsapp.GUI.ControladorPrincipal">
-    <children>
-        <!-- Barra lateral (Lista de chats) -->
-        <VBox prefWidth="200.0" style="-fx-background-color: #f0f0f0;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
-            <Label style="-fx-font-size: 16; -fx-padding: 10;" text="Chats" />
-            <VBox fx:id="listaChats" spacing="10" VBox.vgrow="ALWAYS" />
-        </VBox>
+<?import javafx.scene.layout.Region?>
+<AnchorPane prefHeight="345.0" prefWidth="540.0" stylesheets="@estilo.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="codis.whatsapp.GUI.ControladorPrincipal">
+    <!-- Barra lateral (Lista de chats) -->
+    <VBox prefWidth="200.0" style="-fx-background-color: #f0f0f0;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <Label style="-fx-font-size: 16; -fx-padding: 10;" text="Chats" />
+        <VBox fx:id="listaChats" spacing="10" VBox.vgrow="ALWAYS" />
+    </VBox>
 
-        <!-- Área de mensajes -->
-        <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="200.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-            <!-- Cabecera del chat -->
-            <HBox style="-fx-background-color: #eeeeee; -fx-padding: 10; spacing: 10;">
-                <Label fx:id="currentChatLabel" style="-fx-font-size: 16;" text="Chat Actual" />
-                <Button fx:id="openAmigosButton" text="Amigos" onAction="#abrirVentanaAmigos" />
-            </HBox>
+    <!-- Área de mensajes -->
+    <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="200.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <!-- Cabecera del chat -->
+        <HBox style="-fx-background-color: #eeeeee; -fx-padding: 10;" spacing="10">
+            <Label fx:id="currentChatLabel" style="-fx-font-size: 16;" text="Chat Actual" />
+            <Region HBox.hgrow="ALWAYS" /> <!-- Espaciador -->
+            <Button text="Amigos" onAction="#abrirVentanaAmigos" />
+        </HBox>
 
-            <!-- ScrollPane para los mensajes -->
-            <ScrollPane fx:id="scrollPaneMensajes" fitToWidth="true" VBox.vgrow="ALWAYS">
-                <VBox fx:id="listaMensajes" spacing="10" />
-            </ScrollPane>
 
-            <!-- Caja de entrada de mensajes -->
-            <HBox spacing="10" style="-fx-padding: 10;">
-                <TextField fx:id="messageTextField" promptText="Escribe un mensaje..." HBox.hgrow="ALWAYS" />
-                <Button fx:id="sendButton" text="Enviar" />
-            </HBox>
-        </VBox>
-    </children>
+        <!-- ScrollPane para los mensajes -->
+        <ScrollPane fx:id="scrollPaneMensajes" fitToWidth="true" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+            <VBox fx:id="listaMensajes" spacing="10" style="-fx-background-color: transparent;" />
+        </ScrollPane>
+
+
+        <!-- Caja de entrada de mensajes -->
+        <HBox spacing="10" style="-fx-padding: 10;">
+            <TextField fx:id="messageTextField" promptText="Escribe un mensaje..." HBox.hgrow="ALWAYS" />
+            <Button fx:id="sendButton" text="Enviar" />
+        </HBox>
+    </VBox>
 </AnchorPane>

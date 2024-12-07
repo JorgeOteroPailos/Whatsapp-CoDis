@@ -1,9 +1,6 @@
 package codis.whatsapp.GUI;
 
-import codis.whatsapp.Aplicacion.Chat;
-import codis.whatsapp.Aplicacion.Cliente;
-import codis.whatsapp.Aplicacion.Mensaje;
-import codis.whatsapp.Aplicacion.Usuario;
+import codis.whatsapp.Aplicacion.*;
 import codis.whatsapp.MainCliente;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -15,17 +12,15 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Objects;
 
 import static codis.whatsapp.Aplicacion.Utils.debugPrint;
 
@@ -44,10 +39,9 @@ public class ControladorPrincipal {
     @FXML
     private Label currentChatLabel;
     private Stage ventanaAmigos;
-
-    private Cliente user;
+    private Cliente cliente;
     private Chat chatSeleccionado;
-    private final Map<String, Chat> chats = new HashMap<>(); // Mapa para manejar chats
+
 
     @FXML
     public void initialize() {
@@ -59,29 +53,23 @@ public class ControladorPrincipal {
             event.consume();
         });
 
+        messageTextField.setOnKeyPressed(event -> {
+            if (Objects.requireNonNull(event.getCode()) == KeyCode.ENTER) {
+                enviarMensaje(); // Llama al método para enviar el mensaje
+                messageTextField.requestFocus(); // Mantener el cursor en el TextField
+            }
+        });
+
         // Configurar el botón de enviar
         sendButton.setOnAction(event -> enviarMensaje());
     }
 
-    public void inicializarChats() {
-        Usuario user1 = new Usuario("amigo1");
-        Chat chat1 = new Chat(user1);
-        chat1.getMensajes().add(new Mensaje("Hola, ¿cómo estás?", LocalDateTime.now().minusMinutes(10), user1));
-        chat1.getMensajes().add(new Mensaje("¡Bien! ¿Y tú?", LocalDateTime.now().minusMinutes(5), user.getUser()));
-
-        Usuario user2 = new Usuario("amigo2");
-        Chat chat2 = new Chat(user2);
-        chat2.getMensajes().add(new Mensaje("¿Qué tal tu día?", LocalDateTime.now().minusMinutes(20), user2));
-
-        chats.put(chat1.getUser().getNombre(), chat1);
-        chats.put(chat2.getUser().getNombre(), chat2);
-
-        agregarChat(chat1);
-        agregarChat(chat2);
+    public void mostratChats(){
+        //TODO (pa que lo llame el Cliente)
     }
 
-    private void agregarChat(Chat chat) {
-        String nombreChat = chat.getUser().getNombre();
+    private void agregarChat(Chat chat, Usuario user) {
+        String nombreChat = user.nombre;
         Label chatLabel = new Label(nombreChat);
         chatLabel.setStyle("-fx-padding: 10; -fx-font-size: 14; -fx-background-color: lightgray; -fx-border-color: grey;");
         chatLabel.setOnMouseClicked(event -> seleccionarChat(nombreChat));
@@ -89,7 +77,7 @@ public class ControladorPrincipal {
     }
 
     private void seleccionarChat(String nombreChat) {
-        chatSeleccionado = chats.get(nombreChat);
+        chatSeleccionado = cliente.getChats().get(new Usuario(nombreChat));
         currentChatLabel.setText("Chat con " + nombreChat);
         actualizarMensajes();
     }
@@ -108,10 +96,11 @@ public class ControladorPrincipal {
     private void enviarMensaje() {
         String texto = messageTextField.getText();
         if (!texto.isBlank() && chatSeleccionado != null) {
-            Mensaje mensaje = new Mensaje(texto, LocalDateTime.now(), user.getUser());
+            Mensaje mensaje = new Mensaje(texto, LocalDateTime.now(), cliente.getUser());
             chatSeleccionado.getMensajes().add(mensaje);
             agregarMensaje(mensaje);
             messageTextField.clear();
+            //TODO actually enviar
         }
     }
 
@@ -121,7 +110,7 @@ public class ControladorPrincipal {
         mensajeVBox.setMaxWidth(300); // Limitar el ancho máximo de la burbuja del mensaje
 
         // Etiqueta del remitente
-        Label remitenteLabel = new Label(mensaje.remitente.getNombre());
+        Label remitenteLabel = new Label(mensaje.remitente.nombre);
         remitenteLabel.setStyle("-fx-font-size: 12; -fx-text-fill: grey;");
 
         // Contenido del mensaje
@@ -137,7 +126,7 @@ public class ControladorPrincipal {
         mensajeVBox.getChildren().addAll(remitenteLabel, textoMensaje, horaLabel);
 
         // Estilizar y alinear según el remitente
-        if (mensaje.remitente.equals(user.getUser())) {
+        if (mensaje.remitente.equals(cliente.getUser())) {
             mensajeVBox.setStyle("-fx-background-color: lightblue; -fx-padding: 10; -fx-background-radius: 10;");
             contenedorMensaje.setAlignment(Pos.CENTER_RIGHT); // Mensajes enviados a la derecha
         } else {
@@ -157,14 +146,8 @@ public class ControladorPrincipal {
         Platform.runLater(() -> scrollPaneMensajes.setVvalue(1.0));
     }
 
-    public void configurarParametros(String ip, String puerto, String ipServidor, String puertoServidor, Usuario user) {
-        try{
-            this.user = new Cliente(user, ip, Integer.parseInt(puerto));
-        }catch(RemoteException e){
-            System.err.println("Error en la creación del cliente");
-            System.exit(-1);
-        }
-
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
     }
 
     @FXML
@@ -179,6 +162,10 @@ public class ControladorPrincipal {
             debugPrint("loader creado");
             Parent root = loader.load();
             debugPrint("loader cargado");
+
+            ControladorAmigos controladorAmigos = loader.getController();
+            controladorAmigos.setCliente(cliente);
+
             ventanaAmigos = new Stage();
             debugPrint("Stage creado");
             ventanaAmigos.setTitle("Gestión de Amigos");

@@ -12,7 +12,6 @@ package codis.whatsapp.BD;
 public abstract class AbstractDAO {
     private java.sql.Connection conexion;
 
-
     protected java.sql.Connection getConexion(){
         return this.conexion;
     }
