@@ -90,7 +90,7 @@ public class ControladorLogin {
                     controladorPrincipal.setCliente(cliente);
                 }catch (Exception e){
                     System.err.println("Error en la creación del cliente: "+e.getMessage());
-                    //e.printStackTrace();
+                    e.printStackTrace();
                     Platform.runLater(()->{
                         Platform.runLater(pantallaCarga::cerrarPantalla);
                         Popup.show("Error","Error en la creación del cliente: "+e.getMessage(), Alert.AlertType.ERROR);

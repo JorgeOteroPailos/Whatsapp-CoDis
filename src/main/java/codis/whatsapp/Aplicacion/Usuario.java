@@ -20,4 +20,8 @@ public class Usuario {
         ORemoto = i;
     }
 
+    public Usuario(String nombre, ICliente ORemoto) {
+        this.nombre = nombre;
+        this.ORemoto = ORemoto;
+    }
 }

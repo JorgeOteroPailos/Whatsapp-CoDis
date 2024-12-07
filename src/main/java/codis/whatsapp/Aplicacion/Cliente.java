@@ -49,18 +49,19 @@ public class Cliente extends UnicastRemoteObject implements ICliente{
     private void inicializarMovidasRemotas(String IP, int puerto, int puertoServidor, String ipServidor, String contrasena) throws Exception {
         publicarse(IP, puerto);
         debugPrint("Cliente publicado correctamente");
+
         servidor=inicializarServidor(puertoServidor, ipServidor);
         debugPrint("Conexión con el servidor realizada");
+
         iniciarSesion(servidor, IP, puerto, contrasena);
         debugPrint("sesión iniciada");
+
         debugPrint("Cliente creado correctamente (milagro)");
     }
 
     public void iniciarSesion(IServidor servidor, String ip, int puerto, String contrasena) throws Exception {
-
-        //TODO usar el codigo
-        servidor.iniciar_sesion(ip, puerto, user.nombre, contrasena);
-
+         this.codigoSesion=servidor.iniciar_sesion(ip, puerto, user.nombre, contrasena);
+         //TODO getListaAmigos
     }
 
     public static IServidor inicializarServidor(int puertoServidor, String ipServidor) throws Exception {
@@ -70,7 +71,6 @@ public class Cliente extends UnicastRemoteObject implements ICliente{
     private void publicarse(String IP, int puerto) throws RemoteException, MalformedURLException{
         debugPrint("iniciando publicacion del cliente");
         startRegistry(puerto);
-        // register the object under the name “some”
         String registryURL = "rmi://"+IP+":" + puerto + "/"+user.nombre;
         Naming.rebind(registryURL, this);
     }
