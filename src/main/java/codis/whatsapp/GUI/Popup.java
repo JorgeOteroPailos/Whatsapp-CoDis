@@ -24,5 +24,18 @@ public class Popup {
         // Mostrar o popup e esperar que o usuario o peche
         alert.showAndWait();
     }
+
+    public static void show(Exception e){
+        // Crear unha alerta
+        Alert alert = new Alert(AlertType.ERROR);
+
+        // Configurar o título e contido
+        alert.setTitle("Error");
+        alert.setHeaderText(null); // Opcional, podes engadir un subtítulo
+        alert.setContentText(e.getMessage());
+
+        // Mostrar o popup e esperar que o usuario o peche
+        alert.showAndWait();
+    }
 }
 

@@ -1,8 +1,11 @@
 package codis.whatsapp.Aplicacion;
 
 import codis.whatsapp.BD.DAOUsuarios;
+import codis.whatsapp.Aplicacion.Excepciones.*;
 
 import java.rmi.Naming;
+import java.net.MalformedURLException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.*;
@@ -37,45 +40,48 @@ public class Servidor extends UnicastRemoteObject implements IServidor {
         return nombre;
     }
 
-    public String iniciar_sesion(String IP, int puerto, String nombre, String contrasena) throws Exception {
+    public String iniciar_sesion(String IP, int puerto, String nombre, String contrasena) throws SQLException, ContrasenaErronea, FalloUsuario, RemoteException, MalformedURLException, NotBoundException {
         String codigo=daoUsuarios.iniciarSesion(nombre, contrasena);
-        genteConectada.put(nombre, new Usuario(nombre, (ICliente)  Naming.lookup("rmi://" + IP + ":" + puerto + "/"+nombre)));
+        Usuario solicitante=new Usuario(nombre, (ICliente)  Naming.lookup("rmi://" + IP + ":" + puerto + "/"+nombre));
+        genteConectada.put(nombre, solicitante);
+
+
+        for(Usuario u : obtener_lista_amigos(solicitante, contrasena)){
+            u.getORemoto().informarDeAmigoOnline(solicitante);
+        }
 
         return codigo;
     }
 
-    public void registrarse(String nombre, String contrasena) throws Exception {
+    public void registrarse(String nombre, String contrasena) throws SQLException, FalloUsuario, RemoteException{
         daoUsuarios.registrarse(nombre, contrasena);
     }
 
-    //TODO todos los try catch y modificación aplicada al arraylist de usuarios conectados
-
-    public void crear_solicitud(String solicitante, String solicitado) throws Exception {
-        daoUsuarios.crear_solicitud(solicitante, solicitado);
+    public void crear_solicitud(String solicitante, String solicitado, String contrasena) throws SQLException, FalloSolicitud, ContrasenaErronea, RemoteException{
+        daoUsuarios.crear_solicitud(solicitante, solicitado, contrasena);
     }
 
-    public void aceptar_solicitud(String solicitante, String solicitado) throws Exception {
-        daoUsuarios.aceptar_solicitud(solicitante, solicitado);
+    public void aceptar_solicitud(String solicitante, String solicitado, String contrasena) throws SQLException, FalloSolicitud,ContrasenaErronea, RemoteException{
+        daoUsuarios.aceptar_solicitud(solicitante, solicitado, contrasena);
     }
 
-    public void rechazar_solicitud(String solicitante, String solicitado) throws Exception {
-        daoUsuarios.crear_solicitud(solicitante, solicitado);
+    public void rechazar_solicitud(String solicitante, String solicitado, String contrasena) throws SQLException, FalloSolicitud, ContrasenaErronea, RemoteException{
+        daoUsuarios.crear_solicitud(solicitante, solicitado, contrasena);
     }
 
-    public List<String> mostrar_solicitudes(String usuario) throws Exception {
-        return daoUsuarios.mostrar_solicitudes(usuario);
+    public List<String> mostrar_solicitudes(String usuario, String contrasena) throws SQLException, ContrasenaErronea, RemoteException{
+        return daoUsuarios.mostrar_solicitudes(usuario, contrasena);
     }
 
-    public void borrar_amistad(String usuario, String amistad) throws Exception {
-        daoUsuarios.borrar_amistad(usuario, amistad);
+    public void borrar_amistad(String usuario, String amistad, String contrasena) throws SQLException, FalloAmigo, ContrasenaErronea, RemoteException{
+        daoUsuarios.borrar_amistad(usuario, amistad, contrasena);
     }
 
-    public List<Usuario> obtener_lista_amigos(Usuario usuario) throws RemoteException, SQLException {
-        List<Usuario> amigos=daoUsuarios.obtener_lista_amigos(usuario);
+    public List<Usuario> obtener_lista_amigos(Usuario usuario, String contrasena) throws SQLException,ContrasenaErronea, RemoteException{
+        List<Usuario> amigos=daoUsuarios.obtener_lista_amigos(usuario, contrasena);
         ListIterator<Usuario> i = amigos.listIterator();
         List<Usuario> res=new ArrayList<>();
         while(i.hasNext()){
-
             Usuario amigo = genteConectada.get(i.next().nombre);
             if(amigo!=null){
                 res.add(amigo);
@@ -84,7 +90,8 @@ public class Servidor extends UnicastRemoteObject implements IServidor {
         return res;
     }
 
-    public void cerrar_sesion(String nombre) throws Exception {
-        daoUsuarios.cerrar_sesion(nombre);
+    public void cerrar_sesion(String nombre, String contrasena) throws SQLException, ContrasenaErronea, RemoteException{
+        daoUsuarios.cerrar_sesion(nombre, contrasena);
+        genteConectada.remove(nombre);
     }
 }

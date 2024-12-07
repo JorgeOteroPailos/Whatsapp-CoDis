@@ -8,12 +8,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
-import java.rmi.Naming;
 
-import codis.whatsapp.Aplicacion.IServidor;
 import codis.whatsapp.Aplicacion.Cliente;
 
 public class ControladorAmigos {
@@ -42,7 +39,7 @@ public class ControladorAmigos {
         if (!nuevoAmigo.isEmpty()) {
             System.out.println("Solicitud enviada a: " + nuevoAmigo);
             try {
-                user.getServidor().crear_solicitud(user.getUser().nombre, nuevoAmigo);
+                user.getServidor().crear_solicitud(user.getUser().nombre, nuevoAmigo, user.getContrasena());
             }catch(Exception e){
                 System.err.println("Remote Exception : " + e);
                 Popup.show("Error", "Error al publicar el cliente"+e.getMessage(), Alert.AlertType.ERROR);
@@ -98,14 +95,18 @@ public class ControladorAmigos {
     private void rechazarSolicitud(String solicitud) {
         System.out.println("Solicitud rechazada: " + solicitud);
         solicitudesPendientes.remove(solicitud);
+        actualizarSolicitudes();
+        /*
         try {
             //TODO
-            //user.getServidor().rechazar_solicitud(solicitud,user.getUser().nombre());
+            user.getServidor().rechazar_solicitud(solicitud,user.getUser().nombre, user.getContrasena());
         }catch(Exception e){
             System.err.println("Remote Exception : " + e);
             Popup.show("Error", "Error al publicar el cliente"+e.getMessage(), Alert.AlertType.ERROR);
         }
         actualizarSolicitudes();
+        */
+
     }
 
     public void setCliente(Cliente user){

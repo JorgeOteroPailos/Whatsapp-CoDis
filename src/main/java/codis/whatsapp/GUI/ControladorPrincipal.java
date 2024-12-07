@@ -8,18 +8,16 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.io.IOException;
+import java.rmi.RemoteException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Objects;
 
 import static codis.whatsapp.Aplicacion.Utils.debugPrint;
@@ -42,6 +40,12 @@ public class ControladorPrincipal {
     private Cliente cliente;
     private Chat chatSeleccionado;
 
+    private String nombreChatSeleccionado;
+
+
+    public Chat getChatSeleccionado() {
+        return chatSeleccionado;
+    }
 
     @FXML
     public void initialize() {
@@ -64,22 +68,38 @@ public class ControladorPrincipal {
         sendButton.setOnAction(event -> enviarMensaje());
     }
 
-    public void mostratChats(){
-        //TODO (pa que lo llame el Cliente)
-    }
 
-    private void agregarChat(Chat chat, Usuario user) {
-        String nombreChat = user.nombre;
-        Label chatLabel = new Label(nombreChat);
-        chatLabel.setStyle("-fx-padding: 10; -fx-font-size: 14; -fx-background-color: lightgray; -fx-border-color: grey;");
-        chatLabel.setOnMouseClicked(event -> seleccionarChat(nombreChat));
-        listaChats.getChildren().add(chatLabel);
+    public void agregarChat(Usuario user) {
+        Platform.runLater(()->{
+            String nombreChat = user.nombre;
+            Label chatLabel = new Label(nombreChat);
+            chatLabel.setStyle("-fx-padding: 10; -fx-font-size: 14; -fx-background-color: lightgray; -fx-border-color: grey;");
+            chatLabel.setOnMouseClicked(event -> seleccionarChat(nombreChat));
+            listaChats.getChildren().add(chatLabel);
+        });
+
     }
 
     private void seleccionarChat(String nombreChat) {
-        chatSeleccionado = cliente.getChats().get(new Usuario(nombreChat));
-        currentChatLabel.setText("Chat con " + nombreChat);
-        actualizarMensajes();
+        try{
+            chatSeleccionado = cliente.getChats().get(new Usuario(nombreChat));
+            if(chatSeleccionado==null){
+                debugPrint("chatSeleccionado es null (SeleccionarChat)");
+                debugPrint("busque el chat con el nombre "+nombreChat);
+                if(!cliente.getChats().containsKey(new Usuario(nombreChat))){
+                    debugPrint("NO EXISTE ESTE CHAT ASLDASHDOAISD");
+                }
+            }
+
+
+            nombreChatSeleccionado=nombreChat;
+            currentChatLabel.setText("Chat con " + nombreChat);
+            actualizarMensajes();
+        }catch (Exception e){
+            System.err.println(e.getMessage());
+            Popup.show(e);
+        }
+
     }
 
     private void actualizarMensajes() {
@@ -94,17 +114,28 @@ public class ControladorPrincipal {
     }
 
     private void enviarMensaje() {
+        debugPrint("entrando a EnviarMensaje");
         String texto = messageTextField.getText();
+        if(texto.isBlank()){System.err.println("texto is null (enviarMensaje)");}
+        if(chatSeleccionado==null){System.err.println("chatSeleccionado es null (enviarMensaje)");}
         if (!texto.isBlank() && chatSeleccionado != null) {
+            debugPrint("creando mensaje");
             Mensaje mensaje = new Mensaje(texto, LocalDateTime.now(), cliente.getUser());
             chatSeleccionado.getMensajes().add(mensaje);
             agregarMensaje(mensaje);
             messageTextField.clear();
-            //TODO actually enviar
+            try {
+                cliente.enviarMensaje(texto,new Usuario(nombreChatSeleccionado));
+            } catch (RemoteException e) {
+                System.err.println("Error en el envío del mensaje: "+e.getMessage());
+                Popup.show("Error","Error en el envío del mensaje, inténtelo de nuevo más tarde", Alert.AlertType.ERROR);
+            }
+            debugPrint("Mensaje enviado guay");
+
         }
     }
 
-    private void agregarMensaje(Mensaje mensaje) {
+    public void agregarMensaje(Mensaje mensaje) {
         HBox contenedorMensaje = new HBox();
         VBox mensajeVBox = new VBox(5);
         mensajeVBox.setMaxWidth(300); // Limitar el ancho máximo de la burbuja del mensaje
@@ -172,11 +203,8 @@ public class ControladorPrincipal {
             ventanaAmigos.setScene(new Scene(root));
             ventanaAmigos.setOnCloseRequest(event -> ventanaAmigos = null); // Limpiar referencia al cerrar
             ventanaAmigos.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Error al abrir la ventana de amigos: " + e.getMessage());
-        } catch (Exception e){
-            e.printStackTrace();
+        }  catch (Exception e){
+            debugPrint(Arrays.toString(e.getStackTrace()));
             System.err.println("Error inesperado al abrir la ventana de amigos: "+e.getMessage());
         }
     }

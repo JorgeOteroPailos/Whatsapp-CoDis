@@ -20,7 +20,7 @@ public class MainServidor {
                 try {
                     validarIP(host);
                     break; // Salir del bucle si es válida
-                } catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException e){
                     System.err.println("IP no válida: " + e.getMessage());
                 }
             }

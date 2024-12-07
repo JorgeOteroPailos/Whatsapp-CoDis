@@ -124,15 +124,12 @@ public class ControladorLogin {
         Runnable accion = () -> {
             try {
                 IServidor servidor = Cliente.inicializarServidor(getPuertoServidor(), getIpServidor());
-                servidor.registrarse(getNombre(), getContrasena());
+                servidor.registrarse(getNombre(), getContrasenaSinValidar());
                 debugPrint("Cuenta creada correctamente (sin excepciones, al menos");
                 Platform.runLater(() -> {
                     Popup.show("Cuenta creada", "Usuario registrado correctamente", Alert.AlertType.CONFIRMATION);
                     pantallaCarga.cerrarPantalla();
                 });
-            }catch (IllegalArgumentException e){
-                System.err.println("Argumento incorrecto: "+e.getMessage());
-                Platform.runLater(()->Popup.show("Error","El nombre de usuario no puede estar vacío", Alert.AlertType.ERROR));
             } catch (Exception e) {
                 System.err.println("Error al crear la cuenta: "+e.getMessage());
                 Platform.runLater(()-> {
