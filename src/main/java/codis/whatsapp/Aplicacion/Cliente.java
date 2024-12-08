@@ -17,17 +17,28 @@ public class Cliente extends UnicastRemoteObject implements ICliente{
     private final ControladorPrincipal cp;
     private IServidor servidor;
     private final String contrasena;
-    private List<Usuario> amigosOnline;
-
     private final Map<Usuario, Chat> chats = new HashMap<>(); // Mapa para manejar chats
-    public void recibir(String texto, Usuario remitente, String codigo) throws RemoteException {
+    public void recibir(String texto, Usuario remitente) throws RemoteException {
         // Buscar al remitente en la lista de amigos online
-        Usuario r = amigosOnline.stream()
+        Usuario r = chats.keySet().stream()
                 .filter(remitente::equals)
                 .findFirst()
                 .orElse(null);
 
-        if (r == null || !Objects.equals(r.getCodigoSesion(), remitente.getCodigoSesion())) {
+        if (r == null) {
+            debugPrint("El objeto 'r' es null en recibir.");
+        } else if (r.getCodigoSesion() == null) {
+            debugPrint("El código de sesión de 'r' es null.");
+        } else if (remitente.getCodigoSesion() == null) {
+            debugPrint("El código de sesión de 'remitente' es null.");
+        } else if (!r.getCodigoSesion().equals(remitente.getCodigoSesion())) {
+            debugPrint("Los códigos de sesión no coinciden: r.getCodigoSesion() = " + r.getCodigoSesion() +
+                    ", remitente.getCodigoSesion() = " + remitente.getCodigoSesion());
+        }
+
+
+        if (r == null || !r.getCodigoSesion().equals( remitente.getCodigoSesion())) {
+            debugPrint("Por alguna razón, returneo de recibir");
             return;
         }
 
@@ -38,18 +49,18 @@ public class Cliente extends UnicastRemoteObject implements ICliente{
     @Override
     public void informarDeAmigoOnline(Usuario amigo) {
         debugPrint("Añadiendo el chat de "+amigo.nombre);
-        amigosOnline.add(amigo);
         chats.put(amigo,new Chat());
+        debugPrint("añadiendo el chat "+amigo.nombre);
         cp.agregarChat(amigo);
     }
 
     public void enviarMensaje(String mensaje, Usuario destino) throws RemoteException {
-        Usuario d = amigosOnline.stream()
+        Usuario d = chats.keySet().stream()
                 .filter(destino::equals)
                 .findFirst()
                 .orElse(null);
         if(d==null){return;}
-        d.getORemoto().recibir(mensaje, user, this.user.getCodigoSesion());
+        d.getORemoto().recibir(mensaje, user);
     }
 
     public String getContrasena(){return contrasena;}
@@ -73,9 +84,10 @@ public class Cliente extends UnicastRemoteObject implements ICliente{
     }
 
     public void inicializarChats() {
-        for (Usuario u : amigosOnline){
+        for (Usuario u : chats.keySet()){
             chats.put(u, new Chat());
             cp.agregarChat(u);
+            debugPrint("añadiendo el chat "+u.nombre);
         }
     }
 
@@ -97,7 +109,12 @@ public class Cliente extends UnicastRemoteObject implements ICliente{
 
     private void obtenerAmigosOnline(IServidor servidor, String contrasena) throws Exception {
         try{
-            amigosOnline=servidor.obtener_lista_amigos(user, contrasena);
+            List<Usuario> aux=servidor.obtener_lista_amigos(user, contrasena);
+            for(Usuario u:aux){
+                chats.put(u, new Chat());
+                debugPrint("añadiendo el chat "+u.nombre);
+                if(chats.containsKey(u)){debugPrint("CUANDO LO INTRODUZCO, existe el chat "+u);}
+            }
         }catch (IllegalArgumentException e){
             System.err.println(e.getMessage());
             debugPrint(Arrays.toString(e.getStackTrace()));

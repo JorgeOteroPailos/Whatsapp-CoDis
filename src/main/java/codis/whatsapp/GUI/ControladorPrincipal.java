@@ -83,15 +83,6 @@ public class ControladorPrincipal {
     private void seleccionarChat(String nombreChat) {
         try{
             chatSeleccionado = cliente.getChats().get(new Usuario(nombreChat));
-            if(chatSeleccionado==null){
-                debugPrint("chatSeleccionado es null (SeleccionarChat)");
-                debugPrint("busque el chat con el nombre "+nombreChat);
-                if(!cliente.getChats().containsKey(new Usuario(nombreChat))){
-                    debugPrint("NO EXISTE ESTE CHAT ASLDASHDOAISD");
-                }
-            }
-
-
             nombreChatSeleccionado=nombreChat;
             currentChatLabel.setText("Chat con " + nombreChat);
             actualizarMensajes();
@@ -114,12 +105,8 @@ public class ControladorPrincipal {
     }
 
     private void enviarMensaje() {
-        debugPrint("entrando a EnviarMensaje");
         String texto = messageTextField.getText();
-        if(texto.isBlank()){System.err.println("texto is null (enviarMensaje)");}
-        if(chatSeleccionado==null){System.err.println("chatSeleccionado es null (enviarMensaje)");}
         if (!texto.isBlank() && chatSeleccionado != null) {
-            debugPrint("creando mensaje");
             Mensaje mensaje = new Mensaje(texto, LocalDateTime.now(), cliente.getUser());
             chatSeleccionado.getMensajes().add(mensaje);
             agregarMensaje(mensaje);

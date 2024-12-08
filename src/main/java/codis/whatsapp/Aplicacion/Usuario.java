@@ -3,6 +3,7 @@ package codis.whatsapp.Aplicacion;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Objects;
 
 public class Usuario implements Serializable {
     public String nombre;
@@ -17,6 +18,11 @@ public class Usuario implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         Usuario u=(Usuario) o;
         return (u.nombre.equals(nombre));
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(nombre);
     }
 
     public void setORemoto(ICliente i){
