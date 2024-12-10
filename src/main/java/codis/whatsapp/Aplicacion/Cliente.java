@@ -1,11 +1,14 @@
 package codis.whatsapp.Aplicacion;
 
+import codis.whatsapp.Aplicacion.Excepciones.ContrasenaErronea;
+import codis.whatsapp.Aplicacion.Excepciones.FalloSolicitud;
 import codis.whatsapp.GUI.ControladorPrincipal;
 
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -18,6 +21,16 @@ public class Cliente extends UnicastRemoteObject implements ICliente{
     private IServidor servidor;
     private final String contrasena;
     private final Map<Usuario, Chat> chats = new HashMap<>(); // Mapa para manejar chats
+    private List<Usuario> solicitudesPendientes = new LinkedList<>(); // Simula solicitudes pendientes
+
+    public List<Usuario> getSolicitudesPendientes() {
+        return solicitudesPendientes;
+    }
+
+    public void setSolicitudesPendientes(List<Usuario> solicitudesPendientes){
+        this.solicitudesPendientes=solicitudesPendientes;
+    }
+
     public void recibir(String texto, Usuario remitente) throws RemoteException {
         // Buscar al remitente en la lista de amigos online
         Usuario r = chats.keySet().stream()
@@ -25,33 +38,55 @@ public class Cliente extends UnicastRemoteObject implements ICliente{
                 .findFirst()
                 .orElse(null);
 
-        if (r == null) {
-            debugPrint("El objeto 'r' es null en recibir.");
-        } else if (r.getCodigoSesion() == null) {
-            debugPrint("El código de sesión de 'r' es null.");
-        } else if (remitente.getCodigoSesion() == null) {
-            debugPrint("El código de sesión de 'remitente' es null.");
-        } else if (!r.getCodigoSesion().equals(remitente.getCodigoSesion())) {
-            debugPrint("Los códigos de sesión no coinciden: r.getCodigoSesion() = " + r.getCodigoSesion() +
-                    ", remitente.getCodigoSesion() = " + remitente.getCodigoSesion());
-        }
-
-
         if (r == null || !r.getCodigoSesion().equals( remitente.getCodigoSesion())) {
             debugPrint("Por alguna razón, returneo de recibir");
             return;
         }
 
-        Mensaje m = new Mensaje(texto, LocalDateTime.now(), user);
-        cp.getChatSeleccionado().getMensajes().add(m);
-        cp.agregarMensaje(m);
+        Mensaje m = new Mensaje(texto, LocalDateTime.now(), remitente);
+        chats.get(r).anadirMensaje(m);
+        cp.agregarMensaje(chats.get(r), m);
     }
-    @Override
+
     public void informarDeAmigoOnline(Usuario amigo) {
+        if(amigo==null){return;}
         debugPrint("Añadiendo el chat de "+amigo.nombre);
         chats.put(amigo,new Chat());
-        debugPrint("añadiendo el chat "+amigo.nombre);
         cp.agregarChat(amigo);
+    }
+
+    public void informarDeAmigoDesconectado(Usuario amigo){
+        if(!Objects.equals(Objects.requireNonNull(chats.keySet().stream()
+                .filter(amigo::equals)
+                .findFirst()
+                .orElse(null)).getCodigoSesion(), amigo.getCodigoSesion())){
+            return;
+        }
+        chats.remove(amigo);
+        cp.eliminarChat(amigo);
+    }
+
+    public void aceptarAmistad(String solicitante) throws Exception {
+        Usuario u = servidor.aceptar_solicitud(solicitante, user.nombre, contrasena);
+        if(u==null){return;}
+        chats.put(u, new Chat());
+        cp.agregarChat(u);
+    }
+
+    public void rechazarAmistad(String solicitante) throws Exception {
+        servidor.rechazar_solicitud(solicitante, user.nombre, contrasena);
+    }
+
+    public void cerrarSesion(){
+        try{
+            for(Usuario u:chats.keySet()){
+                u.getORemoto().informarDeAmigoDesconectado(this.user);
+            }
+            servidor.cerrar_sesion(user.nombre, contrasena);
+        }catch(Exception ignored){
+
+        }
+
     }
 
     public void enviarMensaje(String mensaje, Usuario destino) throws RemoteException {
@@ -64,6 +99,7 @@ public class Cliente extends UnicastRemoteObject implements ICliente{
     }
 
     public String getContrasena(){return contrasena;}
+
     public Usuario getUser(){
         return user;
     }
@@ -124,6 +160,9 @@ public class Cliente extends UnicastRemoteObject implements ICliente{
 
     private void iniciarSesion(IServidor servidor, String ip, int puerto, String contrasena) throws Exception {
          user.setCodigoSesion(servidor.iniciar_sesion(ip, puerto, user.nombre, contrasena));
+         for(String nombre : servidor.mostrar_solicitudes(user.nombre, contrasena)){
+             solicitudesPendientes.add(new Usuario(nombre));
+         }
     }
 
     public static IServidor inicializarServidor(int puertoServidor, String ipServidor) throws Exception {

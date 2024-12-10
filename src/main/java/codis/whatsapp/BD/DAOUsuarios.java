@@ -13,6 +13,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Random;
 
+import static codis.whatsapp.Aplicacion.Utils.debugPrint;
+
     public class DAOUsuarios extends AbstractDAO {
 
         public DAOUsuarios(Connection conexion) {
@@ -81,37 +83,75 @@ import java.util.Random;
         }
 
 
-        public void crear_solicitud(String solicitante, String solicitado, String contrasena) throws SQLException, ContrasenaErronea, FalloSolicitud{
-            Connection con;
-            PreparedStatement stmUsuario = null;
-            ResultSet rsUsuario;
+        public void crear_solicitud(String solicitante, String solicitado, String contrasena) throws SQLException, ContrasenaErronea, FalloSolicitud, FalloAmigo, FalloUsuario {
+            String verificarUsuario = "SELECT * FROM usuarios WHERE nombre = ? AND contrasena = ?";
+            String verificarSolicitado = "SELECT * FROM usuarios WHERE nombre = ?";
+            String verificarAmigos = "SELECT * FROM amigos WHERE (amigo1 = ? AND amigo2 = ?) OR (amigo1 = ? AND amigo2 = ?)";
+            String verificarSolicitudes = "SELECT * FROM solicitudes WHERE (solicitante = ? AND solicitado = ?) OR (solicitante = ? AND solicitado = ?)";
+            String insertarSolicitud = "INSERT INTO solicitudes (solicitante, solicitado) VALUES (?, ?)";
 
-            con = this.getConexion();
-            try{
-                stmUsuario=con.prepareStatement("select * from usuarios where nombre = ? and contrasena = ?");
-                stmUsuario.setString(1, solicitado);
-                stmUsuario.setString(2, contrasena);
-                rsUsuario=stmUsuario.executeQuery();
-                if(!rsUsuario.next()){
-                    throw new ContrasenaErronea("Contraseña errónea");
-                }
+            try (Connection con = this.getConexion();
+                 PreparedStatement stmUsuario = con.prepareStatement(verificarUsuario)) {
 
-                stmUsuario=con.prepareStatement("select * from solicitudes where (solicitante = ? and solicitado = ?) or (solicitante = ? and solicitado = ?)");
+                // Verificar que el solicitante existe y su contraseña es correcta
                 stmUsuario.setString(1, solicitante);
-                stmUsuario.setString(2, solicitado);
-                stmUsuario.setString(3, solicitado);
-                stmUsuario.setString(4, solicitante);
-                rsUsuario=stmUsuario.executeQuery();
-                if (rsUsuario.next()) {
-                    throw new FalloSolicitud("Esta solicitud ya existe, ya sea porque ya fue enviada una solicitud a este usuario o porque ya tiene una solicitud del usuario");
-                }else{
-                    stmUsuario=con.prepareStatement("insert into solicitudes(solicitante, solicitado) values(?,?)");
-                    stmUsuario.setString(1, solicitante);
-                    stmUsuario.setString(2, solicitado);
-                    stmUsuario.executeQuery();
+                stmUsuario.setString(2, contrasena);
+
+                try (ResultSet rsUsuario = stmUsuario.executeQuery()) {
+                    if (!rsUsuario.next()) {
+                        throw new ContrasenaErronea("Contraseña errónea");
+                    }
                 }
-            }catch (SQLException e) {
-                System.out.println(e.getMessage());
+
+                try(PreparedStatement stmSolicitado = con.prepareStatement(verificarSolicitado)) {
+                    // Verificar que el solicitante existe y su contraseña es correcta
+                    stmSolicitado.setString(1, solicitado);
+
+                    try (ResultSet rsUsuario = stmSolicitado.executeQuery()) {
+                        if (!rsUsuario.next()) {
+                            throw new FalloUsuario("El usuario no existe en la base de datos");
+                        }
+                    }
+                }
+
+
+                // Verificar si ya son amigos
+                try (PreparedStatement stmAmigos = con.prepareStatement(verificarAmigos)) {
+                    stmAmigos.setString(1, solicitante);
+                    stmAmigos.setString(2, solicitado);
+                    stmAmigos.setString(3, solicitado);
+                    stmAmigos.setString(4, solicitante);
+
+                    try (ResultSet rsAmigos = stmAmigos.executeQuery()) {
+                        if (rsAmigos.next()) {
+                            throw new FalloAmigo("Ya eres amigo de este usuario");
+                        }
+                    }
+                }
+
+                // Verificar si ya existe una solicitud
+                try (PreparedStatement stmSolicitudes = con.prepareStatement(verificarSolicitudes)) {
+                    stmSolicitudes.setString(1, solicitante);
+                    stmSolicitudes.setString(2, solicitado);
+                    stmSolicitudes.setString(3, solicitado);
+                    stmSolicitudes.setString(4, solicitante);
+
+                    try (ResultSet rsSolicitudes = stmSolicitudes.executeQuery()) {
+                        if (rsSolicitudes.next()) {
+                            throw new FalloSolicitud("Esta solicitud ya existe");
+                        }
+                    }
+                }
+
+                // Insertar la nueva solicitud
+                try (PreparedStatement stmInsertar = con.prepareStatement(insertarSolicitud)) {
+                    stmInsertar.setString(1, solicitante);
+                    stmInsertar.setString(2, solicitado);
+                    stmInsertar.executeUpdate();
+                }
+
+            } catch (SQLException e) {
+                System.err.println("Error en crear_solicitud: " + e.getMessage());
                 throw e;
             }
         }
@@ -138,7 +178,11 @@ import java.util.Random;
                     stmUsuario=con.prepareStatement("insert into amigos(amigo1, amigo2) values(?,?)");
                     stmUsuario.setString(1, solicitante);
                     stmUsuario.setString(2, solicitado);
-                    stmUsuario.executeQuery();
+                    stmUsuario.executeUpdate();
+                    stmUsuario=con.prepareStatement("delete from solicitudes where solicitante = ? and solicitado = ?");
+                    stmUsuario.setString(1, solicitante);
+                    stmUsuario.setString(2, solicitado);
+                    stmUsuario.executeUpdate();
                 }else{
                     throw new FalloSolicitud("No existe la solicitud que estás intentando aceptar");
                 }
@@ -170,7 +214,7 @@ import java.util.Random;
                     stmUsuario=con.prepareStatement("delete from solicitudes where solicitante = ? and solicitado = ?");
                     stmUsuario.setString(1, solicitante);
                     stmUsuario.setString(2, solicitado);
-                    stmUsuario.executeQuery();
+                    stmUsuario.executeUpdate();
                 }else{
                     throw new FalloSolicitud("No existe la solicitud que estás intentando aceptar");
                 }
@@ -196,9 +240,8 @@ import java.util.Random;
                     throw new ContrasenaErronea("Contraseña errónea");
                 }
 
-                stmUsuario=con.prepareStatement("select * from solicitudes where solicitante = ? or solicitado = ?");
+                stmUsuario=con.prepareStatement("select * from solicitudes where solicitado = ?");
                 stmUsuario.setString(1, usuario);
-                stmUsuario.setString(2, usuario);
                 rsUsuario=stmUsuario.executeQuery();
                 while (rsUsuario.next()) {
                     if(rsUsuario.getString("solicitante").equals(usuario)){
@@ -251,6 +294,8 @@ import java.util.Random;
         }
 
         public ArrayList<Usuario> obtener_lista_amigos(Usuario usuario, String contrasena) throws SQLException, ContrasenaErronea, RemoteException {
+
+            debugPrint("entrando a ObtenerListaAmigos con la contra "+contrasena);
 
             ArrayList<Usuario> resultado = new java.util.ArrayList<>();
             Usuario usuarioActual;

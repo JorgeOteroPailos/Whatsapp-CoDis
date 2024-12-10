@@ -42,11 +42,6 @@ public class ControladorPrincipal {
 
     private String nombreChatSeleccionado;
 
-
-    public Chat getChatSeleccionado() {
-        return chatSeleccionado;
-    }
-
     @FXML
     public void initialize() {
         // Configurar el comportamiento del scroll manualmente
@@ -77,7 +72,34 @@ public class ControladorPrincipal {
             chatLabel.setOnMouseClicked(event -> seleccionarChat(nombreChat));
             listaChats.getChildren().add(chatLabel);
         });
+    }
 
+    public void cerrarSesion(){
+        cliente.cerrarSesion();
+    }
+
+    public void eliminarChat(Usuario user) {
+        Platform.runLater(() -> {
+            String nombreChat = user.nombre;
+            Label chatAEliminar = null;
+
+            // Buscar el Label correspondiente al chat en la lista de chats
+            for (var nodo : listaChats.getChildren()) {
+                if (nodo instanceof Label label) {
+                    if (label.getText().equals(nombreChat)) {
+                        chatAEliminar = label;
+                        break;
+                    }
+                }
+            }
+            // Si se encontró, eliminar el chat
+            if (chatAEliminar != null) {
+                listaChats.getChildren().remove(chatAEliminar);
+                debugPrint("Chat eliminado: " + nombreChat);
+            } else {
+                debugPrint("No se encontró el chat para eliminar: " + nombreChat);
+            }
+        });
     }
 
     private void seleccionarChat(String nombreChat) {
@@ -97,7 +119,7 @@ public class ControladorPrincipal {
         listaMensajes.getChildren().clear();
         if (chatSeleccionado != null) {
             for (Mensaje mensaje : chatSeleccionado.getMensajes()) {
-                agregarMensaje(mensaje);
+                agregarMensaje(chatSeleccionado, mensaje);
             }
             // Desplaza automáticamente al final después de cargar los mensajes
             scrollToBottom();
@@ -109,7 +131,7 @@ public class ControladorPrincipal {
         if (!texto.isBlank() && chatSeleccionado != null) {
             Mensaje mensaje = new Mensaje(texto, LocalDateTime.now(), cliente.getUser());
             chatSeleccionado.getMensajes().add(mensaje);
-            agregarMensaje(mensaje);
+            agregarMensaje(chatSeleccionado, mensaje);
             messageTextField.clear();
             try {
                 cliente.enviarMensaje(texto,new Usuario(nombreChatSeleccionado));
@@ -122,41 +144,44 @@ public class ControladorPrincipal {
         }
     }
 
-    public void agregarMensaje(Mensaje mensaje) {
-        HBox contenedorMensaje = new HBox();
-        VBox mensajeVBox = new VBox(5);
-        mensajeVBox.setMaxWidth(300); // Limitar el ancho máximo de la burbuja del mensaje
+    public void agregarMensaje(Chat c, Mensaje mensaje) {
+        if(c!=chatSeleccionado){return;}
+        Platform.runLater(()->{
+            HBox contenedorMensaje = new HBox();
+            VBox mensajeVBox = new VBox(5);
+            mensajeVBox.setMaxWidth(300); // Limitar el ancho máximo de la burbuja del mensaje
 
-        // Etiqueta del remitente
-        Label remitenteLabel = new Label(mensaje.remitente.nombre);
-        remitenteLabel.setStyle("-fx-font-size: 12; -fx-text-fill: grey;");
+            // Etiqueta del remitente
+            Label remitenteLabel = new Label(mensaje.remitente.nombre);
+            remitenteLabel.setStyle("-fx-font-size: 12; -fx-text-fill: grey;");
 
-        // Contenido del mensaje
-        Label textoMensaje = new Label(mensaje.texto);
-        textoMensaje.setWrapText(true);
-        textoMensaje.setStyle("-fx-font-size: 16;");
+            // Contenido del mensaje
+            Label textoMensaje = new Label(mensaje.texto);
+            textoMensaje.setWrapText(true);
+            textoMensaje.setStyle("-fx-font-size: 16;");
 
-        // Hora del mensaje
-        Label horaLabel = new Label(mensaje.tiempo.format(DateTimeFormatter.ofPattern("HH:mm")));
-        horaLabel.setStyle("-fx-font-size: 10; -fx-text-fill: grey;");
+            // Hora del mensaje
+            Label horaLabel = new Label(mensaje.tiempo.format(DateTimeFormatter.ofPattern("HH:mm")));
+            horaLabel.setStyle("-fx-font-size: 10; -fx-text-fill: grey;");
 
-        // Añadir contenido al VBox
-        mensajeVBox.getChildren().addAll(remitenteLabel, textoMensaje, horaLabel);
+            // Añadir contenido al VBox
+            mensajeVBox.getChildren().addAll(remitenteLabel, textoMensaje, horaLabel);
 
-        // Estilizar y alinear según el remitente
-        if (mensaje.remitente.equals(cliente.getUser())) {
-            mensajeVBox.setStyle("-fx-background-color: lightblue; -fx-padding: 10; -fx-background-radius: 10;");
-            contenedorMensaje.setAlignment(Pos.CENTER_RIGHT); // Mensajes enviados a la derecha
-        } else {
-            mensajeVBox.setStyle("-fx-background-color: lightgray; -fx-padding: 10; -fx-background-radius: 10;");
-            contenedorMensaje.setAlignment(Pos.CENTER_LEFT); // Mensajes recibidos a la izquierda
-        }
+            // Estilizar y alinear según el remitente
+            if (mensaje.remitente.equals(cliente.getUser())) {
+                mensajeVBox.setStyle("-fx-background-color: lightblue; -fx-padding: 10; -fx-background-radius: 10;");
+                contenedorMensaje.setAlignment(Pos.CENTER_RIGHT); // Mensajes enviados a la derecha
+            } else {
+                mensajeVBox.setStyle("-fx-background-color: lightgray; -fx-padding: 10; -fx-background-radius: 10;");
+                contenedorMensaje.setAlignment(Pos.CENTER_LEFT); // Mensajes recibidos a la izquierda
+            }
 
-        contenedorMensaje.getChildren().add(mensajeVBox);
-        listaMensajes.getChildren().add(contenedorMensaje);
+            contenedorMensaje.getChildren().add(mensajeVBox);
+            listaMensajes.getChildren().add(contenedorMensaje);
 
-        // Desplaza automáticamente al final después de agregar un mensaje
-        scrollToBottom();
+            // Desplaza automáticamente al final después de agregar un mensaje
+            scrollToBottom();
+        });
     }
 
     private void scrollToBottom() {
@@ -183,6 +208,7 @@ public class ControladorPrincipal {
 
             ControladorAmigos controladorAmigos = loader.getController();
             controladorAmigos.setCliente(cliente);
+            controladorAmigos.actualizarSolicitudes();
 
             ventanaAmigos = new Stage();
             debugPrint("Stage creado");

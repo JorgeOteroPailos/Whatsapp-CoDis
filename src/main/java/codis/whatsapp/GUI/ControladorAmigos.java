@@ -1,5 +1,7 @@
 package codis.whatsapp.GUI;
 
+import codis.whatsapp.Aplicacion.Cliente;
+import codis.whatsapp.Aplicacion.Usuario;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -8,10 +10,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
-
-import codis.whatsapp.Aplicacion.Cliente;
 
 public class ControladorAmigos {
 
@@ -23,38 +23,47 @@ public class ControladorAmigos {
 
     private Cliente user;
 
-    private final List<String> solicitudesPendientes = new ArrayList<>(); // Simula solicitudes pendientes
+
 
     @FXML
     public void initialize() {
-        //TODO usar solicitudes reales
-        solicitudesPendientes.add("amigo1");
-        solicitudesPendientes.add("amigo2");
-        actualizarSolicitudes();
     }
+
 
     @FXML
     public void agregarAmigo() {
         String nuevoAmigo = campoAgregarAmigo.getText().trim();
         if (!nuevoAmigo.isEmpty()) {
-            System.out.println("Solicitud enviada a: " + nuevoAmigo);
             try {
                 user.getServidor().crear_solicitud(user.getUser().nombre, nuevoAmigo, user.getContrasena());
             }catch(Exception e){
                 System.err.println("Remote Exception : " + e);
-                Popup.show("Error", "Error al publicar el cliente"+e.getMessage(), Alert.AlertType.ERROR);
+                Popup.show("Error", "Error: "+e.getMessage(), Alert.AlertType.ERROR);
+                return;
             }
+            Popup.show("Guay","Solicitud enviada correctamente", Alert.AlertType.INFORMATION);
             campoAgregarAmigo.clear();
         } else {
             System.out.println("El nombre del amigo no puede estar vacío.");
         }
     }
 
-    private void actualizarSolicitudes() {
+    public void actualizarSolicitudes() {
         listaSolicitudes.getChildren().clear();
-        for (String solicitud : solicitudesPendientes) {
-            HBox solicitudBox = crearSolicitudBox(solicitud);
-            listaSolicitudes.getChildren().add(solicitudBox);
+        try {
+            LinkedList<Usuario> solicitudes=new LinkedList<>();
+            List<String> aux=user.getServidor().mostrar_solicitudes(user.getUser().nombre, user.getContrasena());
+            for(String solicitud : aux){
+                solicitudes.add(new Usuario(solicitud));
+            }
+            user.setSolicitudesPendientes(solicitudes);
+            for (Usuario solicitud : user.getSolicitudesPendientes()) {
+                System.out.println("Hay solicitudes pendientes");
+                HBox solicitudBox = crearSolicitudBox(solicitud.nombre);
+                listaSolicitudes.getChildren().add(solicitudBox);
+            }
+        }catch(Exception ignored){
+
         }
     }
 
@@ -74,38 +83,25 @@ public class ControladorAmigos {
     }
 
     private void aceptarSolicitud(String solicitud) {
-
-        solicitudesPendientes.remove(solicitud);
-        actualizarSolicitudes();
-        /*
         try{
-            //TODO
-            user.getServidor().aceptar_solicitud(solicitud, user.getUser().nombre());
-            solicitudesPendientes.remove(solicitud);
+            user.getSolicitudesPendientes().remove(new Usuario(solicitud));
             actualizarSolicitudes();
-            //user.anadirAmigo(solicitud);
-            //TODO
-        }catch (RemoteException e){
-            System.err.println("Error al acepar la solcitud de "+solicitud);
-            Popup.show("Error solicitud", "Error al acepar la solcitud de "+solicitud, Alert.AlertType.ERROR);
-        }*/
-
+            user.aceptarAmistad(solicitud);
+        } catch (Exception e) {
+            Popup.show("Error", "Error al aceptar la solicitud: "+e.getMessage(), Alert.AlertType.ERROR);
+        }
     }
 
     private void rechazarSolicitud(String solicitud) {
-        System.out.println("Solicitud rechazada: " + solicitud);
-        solicitudesPendientes.remove(solicitud);
-        actualizarSolicitudes();
-        /*
-        try {
-            //TODO
-            user.getServidor().rechazar_solicitud(solicitud,user.getUser().nombre, user.getContrasena());
-        }catch(Exception e){
-            System.err.println("Remote Exception : " + e);
-            Popup.show("Error", "Error al publicar el cliente"+e.getMessage(), Alert.AlertType.ERROR);
+        try{
+            System.out.println("Solicitud rechazada: " + solicitud);
+            user.getSolicitudesPendientes().remove(new Usuario(solicitud));
+            actualizarSolicitudes();
+            user.rechazarAmistad(solicitud);
+        } catch (Exception e) {
+            Popup.show("Error", "Error al rechazar la solicitud: "+e.getMessage(), Alert.AlertType.ERROR);
         }
-        actualizarSolicitudes();
-        */
+
 
     }
 

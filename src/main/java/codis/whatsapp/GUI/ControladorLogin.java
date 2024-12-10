@@ -17,6 +17,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import java.io.IOException;
+import java.util.Arrays;
 
 import static codis.whatsapp.Aplicacion.Utils.*;
 
@@ -100,6 +101,9 @@ public class ControladorLogin {
                 Platform.runLater(()->{
                     pantallaCarga.cerrarPantalla();
                     Stage nuevaVentana = new Stage();
+
+                    nuevaVentana.setOnCloseRequest(event2-> controladorPrincipal.cerrarSesion());
+
                     nuevaVentana.setTitle("Aplicación Principal");
                     nuevaVentana.setScene(new Scene(root, 800, 600));
                     nuevaVentana.show();
@@ -124,10 +128,10 @@ public class ControladorLogin {
         Runnable accion = () -> {
             try {
                 IServidor servidor = Cliente.inicializarServidor(getPuertoServidor(), getIpServidor());
-                servidor.registrarse(getNombre(), getContrasenaSinValidar());
+                servidor.registrarse(getNombre(), getContrasena());
                 debugPrint("Cuenta creada correctamente (sin excepciones, al menos");
                 Platform.runLater(() -> {
-                    Popup.show("Cuenta creada", "Usuario registrado correctamente", Alert.AlertType.CONFIRMATION);
+                    Popup.show("Cuenta creada", "Usuario registrado correctamente", Alert.AlertType.INFORMATION);
                     pantallaCarga.cerrarPantalla();
                 });
             } catch (Exception e) {
@@ -178,8 +182,4 @@ public class ControladorLogin {
         validarIP(IP);
         return IP;
     }
-
-
-
-
 }

@@ -12,8 +12,8 @@ import java.rmi.NotBoundException;
 public interface IServidor extends Remote {
     String iniciar_sesion(String IP, int puerto, String nombre, String contrasena) throws SQLException,ContrasenaErronea, FalloUsuario, RemoteException, MalformedURLException, NotBoundException;
     void registrarse(String nombre, String contrasena) throws SQLException, FalloUsuario, RemoteException;
-    void crear_solicitud(String solicitante, String solicitado, String contrasena) throws SQLException, FalloSolicitud, ContrasenaErronea, RemoteException;
-    void aceptar_solicitud(String solicitante, String solicitao, String contrasena) throws SQLException, FalloSolicitud, ContrasenaErronea, RemoteException; //TODO
+    void crear_solicitud(String solicitante, String solicitado, String contrasena) throws SQLException, FalloSolicitud, ContrasenaErronea, FalloAmigo, FalloUsuario, RemoteException;
+    Usuario aceptar_solicitud(String solicitante, String solicitao, String contrasena) throws SQLException, FalloSolicitud, ContrasenaErronea, RemoteException; //TODO
     void rechazar_solicitud(String solicitante, String solicitado, String contrasena) throws SQLException, FalloSolicitud, ContrasenaErronea, RemoteException;
     List<String> mostrar_solicitudes(String usuario, String contrasena) throws SQLException, ContrasenaErronea,RemoteException;
     void borrar_amistad(String usuario, String amistad, String contrasena) throws SQLException, FalloAmigo, ContrasenaErronea,RemoteException;

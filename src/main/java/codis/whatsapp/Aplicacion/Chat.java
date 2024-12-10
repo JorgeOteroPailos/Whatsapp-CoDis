@@ -13,4 +13,8 @@ public class Chat {
     public Chat(){
         mensajes=new ArrayList<>();
     }
+
+    public void anadirMensaje(Mensaje m){
+        mensajes.add(m);
+    }
 }

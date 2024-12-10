@@ -7,4 +7,6 @@ public interface ICliente extends Remote {
     void recibir(String m, Usuario remitente) throws RemoteException;
 
     void informarDeAmigoOnline(Usuario amigo) throws RemoteException;//TODO revisar la seguridad
+
+    void informarDeAmigoDesconectado(Usuario amigo) throws RemoteException;
 }
