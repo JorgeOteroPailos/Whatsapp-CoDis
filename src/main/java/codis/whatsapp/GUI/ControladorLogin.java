@@ -17,7 +17,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import java.io.IOException;
-import java.util.Arrays;
 
 import static codis.whatsapp.Aplicacion.Utils.*;
 

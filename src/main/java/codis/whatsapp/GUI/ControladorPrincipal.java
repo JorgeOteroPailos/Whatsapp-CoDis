@@ -107,6 +107,17 @@ public class ControladorPrincipal {
             chatSeleccionado = cliente.getChats().get(new Usuario(nombreChat));
             nombreChatSeleccionado=nombreChat;
             currentChatLabel.setText("Chat con " + nombreChat);
+
+            // Restaurar estilo del chat seleccionado
+            for (var nodo : listaChats.getChildren()) {
+                if (nodo instanceof Label label) {
+                    if (label.getText().equals(nombreChat)) {
+                        label.setStyle("-fx-padding: 10; -fx-font-size: 14; -fx-background-color: lightgray; -fx-border-color: grey;");
+                        break;
+                    }
+                }
+            }
+
             actualizarMensajes();
         }catch (Exception e){
             System.err.println(e.getMessage());
@@ -144,8 +155,30 @@ public class ControladorPrincipal {
         }
     }
 
+    private void destacarChat(Usuario user) {
+        String nombreChat = user.nombre;
+
+        for (var nodo : listaChats.getChildren()) {
+            if (nodo instanceof Label label) {
+                if (label.getText().equals(nombreChat)) {
+                    label.setStyle("-fx-padding: 10; -fx-font-size: 14; -fx-background-color: yellow; -fx-border-color: grey;");
+                    break;
+                }
+            }
+        }
+    }
+
     public void agregarMensaje(Chat c, Mensaje mensaje) {
-        if(c!=chatSeleccionado){return;}
+        if(c!=chatSeleccionado){
+            Platform.runLater(() -> {
+                try {
+                    destacarChat(new Usuario(mensaje.remitente.nombre));
+                } catch (RemoteException ignored) {
+
+                }
+            });
+            return;
+        }
         Platform.runLater(()->{
             HBox contenedorMensaje = new HBox();
             VBox mensajeVBox = new VBox(5);

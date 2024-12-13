@@ -1,14 +1,11 @@
 package codis.whatsapp.Aplicacion;
 
-import codis.whatsapp.Aplicacion.Excepciones.ContrasenaErronea;
-import codis.whatsapp.Aplicacion.Excepciones.FalloSolicitud;
 import codis.whatsapp.GUI.ControladorPrincipal;
 
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.*;
 

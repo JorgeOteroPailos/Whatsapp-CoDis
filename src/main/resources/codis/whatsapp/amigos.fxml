@@ -17,6 +17,7 @@
         <HBox spacing="10.0">
             <TextField fx:id="campoAgregarAmigo" promptText="Nombre del amigo a agregar" HBox.hgrow="ALWAYS"/>
             <Button text="Agregar" onAction="#agregarAmigo"/>
+            <Button text="Desagregar" onAction="#desagregarAmigo"/>
         </HBox>
 
         <!-- Lista de solicitudes de amistad -->
@@ -26,4 +27,3 @@
         </ScrollPane>
     </VBox>
 </AnchorPane>
-
