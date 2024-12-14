@@ -125,13 +125,14 @@ public class Cliente extends UnicastRemoteObject implements ICliente{
     }
 
     private void inicializarMovidasRemotas(String IP, int puerto, int puertoServidor, String ipServidor, String contrasena) throws Exception {
-        publicarse(IP, puerto);
+        ICliente oremoto = publicarse(IP, puerto);
+        this.user.setORemoto(oremoto);
         debugPrint("Cliente publicado correctamente");
 
         servidor=inicializarServidor(puertoServidor, ipServidor);
         debugPrint("Conexión con el servidor realizada");
 
-        iniciarSesion(servidor, IP, puerto, contrasena);
+        iniciarSesion(servidor, oremoto, contrasena);
         debugPrint("sesión iniciada");
 
         obtenerAmigosOnline(servidor, contrasena);
@@ -155,8 +156,8 @@ public class Cliente extends UnicastRemoteObject implements ICliente{
 
     }
 
-    private void iniciarSesion(IServidor servidor, String ip, int puerto, String contrasena) throws Exception {
-         user.setCodigoSesion(servidor.iniciar_sesion(ip, puerto, user.nombre, contrasena));
+    private void iniciarSesion(IServidor servidor, ICliente oremoto, String contrasena) throws Exception {
+         user.setCodigoSesion(servidor.iniciar_sesion(oremoto, user.nombre, contrasena));
          for(String nombre : servidor.mostrar_solicitudes(user.nombre, contrasena)){
              solicitudesPendientes.add(new Usuario(nombre));
          }
@@ -166,11 +167,18 @@ public class Cliente extends UnicastRemoteObject implements ICliente{
         return (IServidor) Naming.lookup("rmi://" + ipServidor + ":" + puertoServidor + "/servidor");
     }
 
-    private void publicarse(String IP, int puerto) throws RemoteException, MalformedURLException{
-        debugPrint("iniciando publicacion del cliente");
-        startRegistry(puerto);
-        String registryURL = "rmi://"+IP+":" + puerto + "/"+user.nombre;
+    private ICliente publicarse(String IP, int puerto) throws RemoteException, MalformedURLException {
+        debugPrint("Iniciando publicación del cliente");
+        startRegistry(puerto); // Asegura que el registro RMI está activo
+
+        String registryURL = "rmi://" + IP + ":" + puerto + "/" + user.nombre;
+
+        // Publica el cliente en el registro
         Naming.rebind(registryURL, this);
+        debugPrint("Cliente publicado en: " + registryURL);
+
+        // Devuelve el stub remoto del cliente
+        return (ICliente) this;
     }
 
     public IServidor getServidor(){

@@ -36,12 +36,31 @@ public class ControladorAmigos {
         if (!nuevoAmigo.isEmpty()) {
             try {
                 user.getServidor().crear_solicitud(user.getUser().nombre, nuevoAmigo, user.getContrasena());
+
             }catch(Exception e){
                 System.err.println("Remote Exception : " + e);
                 Popup.show("Error", "Error: "+e.getMessage(), Alert.AlertType.ERROR);
                 return;
             }
             Popup.show("Guay","Solicitud enviada correctamente", Alert.AlertType.INFORMATION);
+            campoAgregarAmigo.clear();
+        } else {
+            System.out.println("El nombre del amigo no puede estar vacío.");
+        }
+    }
+
+    @FXML
+    public void desagregarAmigo(){
+        String viejoAmigo=campoAgregarAmigo.getText().trim();
+        if (!viejoAmigo.isEmpty()) {
+            try {
+                user.getServidor().borrar_amistad(user.getUser().nombre, viejoAmigo, user.getContrasena());
+            }catch(Exception e){
+                System.err.println("Exception : " + e);
+                Popup.show("Error", "Error: "+e.getMessage(), Alert.AlertType.ERROR);
+                return;
+            }
+            Popup.show("Guay","Amigo eliminado correctamente", Alert.AlertType.INFORMATION);
             campoAgregarAmigo.clear();
         } else {
             System.out.println("El nombre del amigo no puede estar vacío.");
@@ -85,8 +104,8 @@ public class ControladorAmigos {
     private void aceptarSolicitud(String solicitud) {
         try{
             user.getSolicitudesPendientes().remove(new Usuario(solicitud));
-            actualizarSolicitudes();
             user.aceptarAmistad(solicitud);
+            actualizarSolicitudes();
         } catch (Exception e) {
             Popup.show("Error", "Error al aceptar la solicitud: "+e.getMessage(), Alert.AlertType.ERROR);
         }
@@ -96,8 +115,8 @@ public class ControladorAmigos {
         try{
             System.out.println("Solicitud rechazada: " + solicitud);
             user.getSolicitudesPendientes().remove(new Usuario(solicitud));
-            actualizarSolicitudes();
             user.rechazarAmistad(solicitud);
+            actualizarSolicitudes();
         } catch (Exception e) {
             Popup.show("Error", "Error al rechazar la solicitud: "+e.getMessage(), Alert.AlertType.ERROR);
         }

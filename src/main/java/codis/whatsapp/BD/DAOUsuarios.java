@@ -283,7 +283,7 @@ import static codis.whatsapp.Aplicacion.Utils.debugPrint;
                     stmUsuario.setString(2, amigo);
                     stmUsuario.setString(3, amigo);
                     stmUsuario.setString(4, usuario);
-                    stmUsuario.executeQuery();
+                    stmUsuario.executeUpdate();
                 }else{
                     throw new FalloAmigo("El usuario que se está intentando eliminar de amigos no pertenece a la lista de amistades");
                 }

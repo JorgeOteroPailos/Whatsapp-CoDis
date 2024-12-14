@@ -53,12 +53,12 @@ public class Servidor extends UnicastRemoteObject implements IServidor {
         return String.valueOf(texto.hashCode());
     }
 
-    public String iniciar_sesion(String IP, int puerto, String nombre, String contrasena) throws SQLException, ContrasenaErronea, FalloUsuario, RemoteException, MalformedURLException, NotBoundException {
+    public String iniciar_sesion(ICliente oremoto, String nombre, String contrasena) throws SQLException, ContrasenaErronea, FalloUsuario, RemoteException, MalformedURLException, NotBoundException {
         String nuevaContrasena=hashearContrasena(contrasena);
 
         debugPrint("ENTRAMOS A INICIARSESION con el nombre "+nombre+" y la contra "+contrasena);
         String codigo=daoUsuarios.iniciarSesion(nombre, nuevaContrasena);
-        Usuario solicitante=new Usuario(nombre, (ICliente)  Naming.lookup("rmi://" + IP + ":" + puerto + "/"+nombre));
+        Usuario solicitante=new Usuario(nombre, oremoto);
         solicitante.setCodigoSesion(codigo);
         genteConectada.put(nombre, solicitante);
 

@@ -252,6 +252,8 @@ public class ControladorPrincipal {
         }  catch (Exception e){
             debugPrint(Arrays.toString(e.getStackTrace()));
             System.err.println("Error inesperado al abrir la ventana de amigos: "+e.getMessage());
+            ventanaAmigos.close();
+            Popup.show("Error","Error al abrir la gestión de amistades", Alert.AlertType.ERROR);
         }
     }
 }
